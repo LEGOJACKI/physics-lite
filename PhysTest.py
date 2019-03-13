@@ -44,7 +44,8 @@ class RenderObject:
         for obj in renderList:
             if not obj == self:
                 if (self.x < obj.x + obj.width and self.x + self.width > obj.x and self.y < obj.y + obj.height and self.y + self.height > obj.y):
-                    self.bounce(True, True)
+                    return obj
+        return False
     def push(self, vx, vy):
         self.vx += vx
         self.vy += vy
@@ -60,7 +61,10 @@ class Rect(RenderObject):
     def render(self):
         self.handleVelocity(False)
         self.keepInBounds()
-        self.collide(renderList)
+        if collision:
+            checkCollide = self.collide(renderList)
+            if not checkCollide == False:
+                self.bounce(True, True)
         screen.blit(self.tex, (self.x, self.y))
 pygame.init()
 screen = pygame.display.set_mode((1280, 720))
@@ -75,6 +79,7 @@ for i in range(2, 10):
     renderList[i].push(random.randint(1, 10), random.randint(1, 10))
 done = False
 frameLimiter = True
+collision = True
 while not done:
     time = clock()
     screen.fill((255, 255, 255))
@@ -94,6 +99,18 @@ while not done:
             if event.key == pygame.K_n:
                 renderList.append(Rect(random.randint(128, 1200), random.randint(128, 680), 32, 32, 'grass.png'))
                 renderList[len(renderList)-1].push(random.randint(1, 10), random.randint(1, 10))
+            if event.key == pygame.K_m:
+                mxy = pygame.mouse.get_pos()
+                mx = mxy[0]
+                my = mxy[1]
+                for obj in renderList:
+                    obj.push((mx - obj.x) / 100, (my - obj.y) / 100)
+            if event.key == pygame.K_f:
+                for obj in renderList:
+                    obj.vx = 0
+                    obj.vy = 0
+            if event.key == pygame.K_c:
+                collision = not collision
     for obj in renderList:
         obj.render()
     pygame.display.flip()
